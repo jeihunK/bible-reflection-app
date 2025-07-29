@@ -222,32 +222,52 @@ class DatabaseService {
 
     console.log('NativeDB: Starting deletion for ID:', id, 'Type:', typeof id);
     
-    // First check if the reflection exists
-    const existing = await this.db.getFirstAsync(
-      'SELECT id FROM reflections WHERE id = ?',
-      [id]
-    );
+    // Get all reflections to see what IDs exist
+    const allReflections = await this.db.getAllAsync('SELECT id FROM reflections');
+    console.log('NativeDB: All reflection IDs:', allReflections.map(r => `${r.id} (${typeof r.id})`));
     
-    console.log('NativeDB: Found reflection for deletion:', existing ? 'YES' : 'NO');
+    // Try different ID formats
+    const possibleIds = [id, String(id), parseInt(id, 10)].filter(Boolean);
+    console.log('NativeDB: Trying ID variations:', possibleIds);
     
-    if (!existing) {
-      throw new Error(`Reflection with ID ${id} not found`);
+    let foundReflection = null;
+    for (const tryId of possibleIds) {
+      const existing = await this.db.getFirstAsync(
+        'SELECT * FROM reflections WHERE id = ? OR id = ?',
+        [tryId, String(tryId)]
+      );
+      if (existing) {
+        foundReflection = existing;
+        console.log('NativeDB: Found reflection with ID variation:', tryId, '-> actual ID:', existing.id);
+        break;
+      }
     }
     
-    const result = await this.db.runAsync('DELETE FROM reflections WHERE id = ?', [id]);
+    if (!foundReflection) {
+      const availableIds = allReflections.map(r => r.id).join(', ');
+      throw new Error(`Reflection not found with ID ${id}. Available IDs: ${availableIds}`);
+    }
+    
+    // Use the actual ID from the found reflection
+    const actualId = foundReflection.id;
+    console.log('NativeDB: Using actual ID for deletion:', actualId, typeof actualId);
+    
+    const result = await this.db.runAsync('DELETE FROM reflections WHERE id = ?', [actualId]);
     console.log('NativeDB: Delete operation result:', result);
     
     // Verify deletion
     const verifyDeleted = await this.db.getFirstAsync(
       'SELECT id FROM reflections WHERE id = ?',
-      [id]
+      [actualId]
     );
     
     console.log('NativeDB: Reflection still exists after delete:', verifyDeleted ? 'YES' : 'NO');
     
     if (verifyDeleted) {
-      throw new Error('Reflection was not deleted from database');
+      throw new Error(`Reflection was not deleted from database. Still found: ${actualId}`);
     }
+    
+    console.log('NativeDB: Deletion successful for ID:', actualId);
   }
 
   // User Preferences Methods

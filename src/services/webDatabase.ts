@@ -204,35 +204,64 @@ class WebDatabaseService {
       const transaction = this.db!.transaction(['reflections'], 'readwrite');
       const store = transaction.objectStore('reflections');
       
-      // First check if the item exists
-      const getRequest = store.get(id);
+      // Try both string and numeric versions of the ID
+      const possibleIds = [
+        id,
+        String(id),
+        parseInt(id, 10),
+        id.toString()
+      ].filter(Boolean);
       
-      getRequest.onsuccess = () => {
-        const result = getRequest.result;
-        console.log('WebDB: Found reflection for deletion:', result ? 'YES' : 'NO');
+      console.log('WebDB: Trying possible ID variations:', possibleIds);
+      
+      // First, get all items to see what IDs exist
+      const getAllRequest = store.getAll();
+      
+      getAllRequest.onsuccess = () => {
+        const allItems = getAllRequest.result;
+        console.log('WebDB: All reflection IDs in database:', allItems.map(item => `${item.id} (${typeof item.id})`));
         
-        if (!result) {
-          reject(new Error(`Reflection with ID ${id} not found`));
+        // Find the item by trying different ID formats
+        let foundItem = null;
+        for (const tryId of possibleIds) {
+          foundItem = allItems.find(item => 
+            item.id === tryId || 
+            String(item.id) === String(tryId) ||
+            item.id.toString() === tryId.toString()
+          );
+          if (foundItem) {
+            console.log('WebDB: Found item with ID variation:', tryId, '-> actual ID:', foundItem.id);
+            break;
+          }
+        }
+        
+        if (!foundItem) {
+          console.error('WebDB: No reflection found with any ID variation');
+          reject(new Error(`Reflection not found with ID ${id}. Available IDs: ${allItems.map(i => i.id).join(', ')}`));
           return;
         }
         
-        // Now delete it
-        const deleteRequest = store.delete(id);
+        // Use the actual ID from the found item
+        const actualId = foundItem.id;
+        console.log('WebDB: Using actual ID for deletion:', actualId, typeof actualId);
+        
+        // Now delete using the correct ID
+        const deleteRequest = store.delete(actualId);
         
         deleteRequest.onsuccess = () => {
-          console.log('WebDB: Delete request succeeded for ID:', id);
+          console.log('WebDB: Delete request succeeded for actual ID:', actualId);
           resolve();
         };
         
         deleteRequest.onerror = () => {
-          console.error('WebDB: Delete request failed for ID:', id, deleteRequest.error);
+          console.error('WebDB: Delete request failed for actual ID:', actualId, deleteRequest.error);
           reject(new Error(`Failed to delete reflection: ${deleteRequest.error?.message || 'Unknown error'}`));
         };
       };
       
-      getRequest.onerror = () => {
-        console.error('WebDB: Get request failed for ID:', id, getRequest.error);
-        reject(new Error(`Failed to find reflection: ${getRequest.error?.message || 'Unknown error'}`));
+      getAllRequest.onerror = () => {
+        console.error('WebDB: Failed to get all items for ID lookup:', getAllRequest.error);
+        reject(new Error(`Failed to lookup reflection: ${getAllRequest.error?.message || 'Unknown error'}`));
       };
       
       transaction.onerror = () => {

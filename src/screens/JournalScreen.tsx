@@ -72,6 +72,7 @@ const JournalScreen = ({ navigation }: any) => {
     },
     addButton: {
       marginBottom: theme.spacing.xl,
+      marginHorizontal: -theme.spacing.lg, // Extend to screen edges
     },
     journalHeader: {
       marginBottom: theme.spacing.xl,
@@ -128,6 +129,9 @@ const JournalScreen = ({ navigation }: any) => {
     emptyText: {
       marginBottom: theme.spacing.lg,
     },
+    emptyCardButton: {
+      marginHorizontal: -theme.spacing.xxl, // Extend to card edges
+    },
   });
 
   const formatDate = (dateString: string) => {
@@ -183,6 +187,7 @@ const JournalScreen = ({ navigation }: any) => {
               variant="primary"
               size="large"
               fullWidth
+              style={styles.emptyCardButton}
             />
           </Card>
         </ScrollView>
@@ -193,7 +198,7 @@ const JournalScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
-        <View style={{ flexDirection: 'row', gap: theme.spacing.md, marginBottom: theme.spacing.md }}>
+        <View style={{ flexDirection: 'row', gap: theme.spacing.md, marginBottom: theme.spacing.md, marginHorizontal: -theme.spacing.lg }}>
           <Button
             title="📝 New Entry"
             onPress={() => navigation.navigate('NewEntry')}

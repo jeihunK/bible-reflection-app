@@ -176,6 +176,7 @@ const NewEntryScreen: React.FC<NewEntryScreenProps> = ({ navigation, route }) =>
     actionButtonsContainer: {
       gap: theme.spacing.md,
       marginTop: theme.spacing.xl,
+      marginHorizontal: -theme.spacing.lg, // Extend to screen edges
     },
     buttonRow: {
       flexDirection: 'row',
