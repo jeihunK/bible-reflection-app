@@ -199,74 +199,48 @@ class WebDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      console.log('WebDB: Starting deletion for ID:', id, 'Type:', typeof id);
+      console.log('WebDB: Attempting to delete reflection with ID:', id, typeof id);
       
       const transaction = this.db!.transaction(['reflections'], 'readwrite');
       const store = transaction.objectStore('reflections');
       
-      // Try both string and numeric versions of the ID
-      const possibleIds = [
-        id,
-        String(id),
-        parseInt(id, 10),
-        id.toString()
-      ].filter(Boolean);
+      // First verify the item exists
+      const getRequest = store.get(id);
       
-      console.log('WebDB: Trying possible ID variations:', possibleIds);
-      
-      // First, get all items to see what IDs exist
-      const getAllRequest = store.getAll();
-      
-      getAllRequest.onsuccess = () => {
-        const allItems = getAllRequest.result;
-        console.log('WebDB: All reflection IDs in database:', allItems.map(item => `${item.id} (${typeof item.id})`));
+      getRequest.onsuccess = () => {
+        const item = getRequest.result;
+        console.log('WebDB: Item exists check:', item ? 'YES' : 'NO');
         
-        // Find the item by trying different ID formats
-        let foundItem = null;
-        for (const tryId of possibleIds) {
-          foundItem = allItems.find(item => 
-            item.id === tryId || 
-            String(item.id) === String(tryId) ||
-            item.id.toString() === tryId.toString()
-          );
-          if (foundItem) {
-            console.log('WebDB: Found item with ID variation:', tryId, '-> actual ID:', foundItem.id);
-            break;
-          }
-        }
-        
-        if (!foundItem) {
-          console.error('WebDB: No reflection found with any ID variation');
-          reject(new Error(`Reflection not found with ID ${id}. Available IDs: ${allItems.map(i => i.id).join(', ')}`));
+        if (!item) {
+          console.log('WebDB: Item not found, rejection deletion');
+          reject(new Error(`Reflection with ID ${id} not found`));
           return;
         }
         
-        // Use the actual ID from the found item
-        const actualId = foundItem.id;
-        console.log('WebDB: Using actual ID for deletion:', actualId, typeof actualId);
+        console.log('WebDB: Found item, proceeding with deletion:', item);
         
-        // Now delete using the correct ID
-        const deleteRequest = store.delete(actualId);
+        // Now delete the item
+        const deleteRequest = store.delete(id);
         
         deleteRequest.onsuccess = () => {
-          console.log('WebDB: Delete request succeeded for actual ID:', actualId);
+          console.log('WebDB: Delete request successful');
           resolve();
         };
         
         deleteRequest.onerror = () => {
-          console.error('WebDB: Delete request failed for actual ID:', actualId, deleteRequest.error);
-          reject(new Error(`Failed to delete reflection: ${deleteRequest.error?.message || 'Unknown error'}`));
+          console.log('WebDB: Delete request failed:', deleteRequest.error);
+          reject(new Error(`Failed to delete reflection: ${deleteRequest.error?.message}`));
         };
       };
       
-      getAllRequest.onerror = () => {
-        console.error('WebDB: Failed to get all items for ID lookup:', getAllRequest.error);
-        reject(new Error(`Failed to lookup reflection: ${getAllRequest.error?.message || 'Unknown error'}`));
+      getRequest.onerror = () => {
+        console.log('WebDB: Get request failed:', getRequest.error);
+        reject(new Error(`Failed to find reflection: ${getRequest.error?.message}`));
       };
       
       transaction.onerror = () => {
-        console.error('WebDB: Transaction failed for deletion of ID:', id, transaction.error);
-        reject(new Error(`Transaction failed: ${transaction.error?.message || 'Unknown error'}`));
+        console.log('WebDB: Transaction failed:', transaction.error);
+        reject(new Error(`Transaction failed: ${transaction.error?.message}`));
       };
     });
   }
