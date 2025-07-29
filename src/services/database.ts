@@ -220,7 +220,34 @@ class DatabaseService {
   async deleteReflection(id: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
-    await this.db.runAsync('DELETE FROM reflections WHERE id = ?', [id]);
+    console.log('NativeDB: Starting deletion for ID:', id, 'Type:', typeof id);
+    
+    // First check if the reflection exists
+    const existing = await this.db.getFirstAsync(
+      'SELECT id FROM reflections WHERE id = ?',
+      [id]
+    );
+    
+    console.log('NativeDB: Found reflection for deletion:', existing ? 'YES' : 'NO');
+    
+    if (!existing) {
+      throw new Error(`Reflection with ID ${id} not found`);
+    }
+    
+    const result = await this.db.runAsync('DELETE FROM reflections WHERE id = ?', [id]);
+    console.log('NativeDB: Delete operation result:', result);
+    
+    // Verify deletion
+    const verifyDeleted = await this.db.getFirstAsync(
+      'SELECT id FROM reflections WHERE id = ?',
+      [id]
+    );
+    
+    console.log('NativeDB: Reflection still exists after delete:', verifyDeleted ? 'YES' : 'NO');
+    
+    if (verifyDeleted) {
+      throw new Error('Reflection was not deleted from database');
+    }
   }
 
   // User Preferences Methods

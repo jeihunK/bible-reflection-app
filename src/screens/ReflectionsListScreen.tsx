@@ -99,6 +99,7 @@ const ReflectionsListScreen = ({ navigation }: any) => {
   };
 
   const handleDeleteReflection = async (id: string) => {
+    console.log('Attempting to delete reflection with ID:', id, 'Type:', typeof id);
     Alert.alert(
       'Delete Reflection',
       'Are you sure you want to delete this reflection?',
@@ -109,13 +110,50 @@ const ReflectionsListScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await databaseService.init(); // Ensure database is initialized
+              await databaseService.init();
+              console.log('Database initialized, deleting reflection...');
+              
+              // Check if reflection exists before deletion
+              const allReflections = await databaseService.getReflections();
+              console.log('All reflections before delete:', allReflections.map(r => ({ id: r.id, type: typeof r.id })));
+              console.log('Looking for reflection with ID:', id, 'Type:', typeof id);
+              
+              const reflectionExists = allReflections.find(r => r.id === id);
+              console.log('Reflection found before delete:', reflectionExists ? 'YES' : 'NO');
+              
+              if (!reflectionExists) {
+                Alert.alert('Error', 'Reflection not found in database');
+                return;
+              }
+              
               await databaseService.deleteReflection(id);
-              setReflections(prev => prev.filter(r => r.id !== id));
-              Alert.alert('Success', 'Reflection deleted successfully.');
+              console.log('Delete operation completed for ID:', id);
+              
+              // Verify deletion with small delay to ensure DB operation completed
+              setTimeout(async () => {
+                try {
+                  const remainingReflections = await databaseService.getReflections();
+                  console.log('Remaining reflections after delete:', remainingReflections.map(r => r.id));
+                  
+                  const stillExists = remainingReflections.find(r => r.id === id);
+                  console.log('Reflection still exists after delete:', stillExists ? 'YES' : 'NO');
+                  
+                  if (stillExists) {
+                    Alert.alert('Error', 'Reflection was not deleted from database');
+                    return;
+                  }
+                  
+                  setReflections(remainingReflections);
+                  Alert.alert('Success', 'Reflection deleted successfully.');
+                } catch (verifyError) {
+                  console.error('Failed to verify deletion:', verifyError);
+                  Alert.alert('Error', 'Failed to verify deletion');
+                }
+              }, 100);
+              
             } catch (error) {
               console.error('Failed to delete reflection:', error);
-              Alert.alert('Error', 'Failed to delete reflection. Please try again.');
+              Alert.alert('Error', `Failed to delete reflection: ${error.message || error}`);
             }
           },
         },

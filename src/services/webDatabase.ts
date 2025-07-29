@@ -199,12 +199,46 @@ class WebDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
+      console.log('WebDB: Starting deletion for ID:', id, 'Type:', typeof id);
+      
       const transaction = this.db!.transaction(['reflections'], 'readwrite');
       const store = transaction.objectStore('reflections');
-      const request = store.delete(id);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error('Failed to delete reflection'));
+      
+      // First check if the item exists
+      const getRequest = store.get(id);
+      
+      getRequest.onsuccess = () => {
+        const result = getRequest.result;
+        console.log('WebDB: Found reflection for deletion:', result ? 'YES' : 'NO');
+        
+        if (!result) {
+          reject(new Error(`Reflection with ID ${id} not found`));
+          return;
+        }
+        
+        // Now delete it
+        const deleteRequest = store.delete(id);
+        
+        deleteRequest.onsuccess = () => {
+          console.log('WebDB: Delete request succeeded for ID:', id);
+          resolve();
+        };
+        
+        deleteRequest.onerror = () => {
+          console.error('WebDB: Delete request failed for ID:', id, deleteRequest.error);
+          reject(new Error(`Failed to delete reflection: ${deleteRequest.error?.message || 'Unknown error'}`));
+        };
+      };
+      
+      getRequest.onerror = () => {
+        console.error('WebDB: Get request failed for ID:', id, getRequest.error);
+        reject(new Error(`Failed to find reflection: ${getRequest.error?.message || 'Unknown error'}`));
+      };
+      
+      transaction.onerror = () => {
+        console.error('WebDB: Transaction failed for deletion of ID:', id, transaction.error);
+        reject(new Error(`Transaction failed: ${transaction.error?.message || 'Unknown error'}`));
+      };
     });
   }
 

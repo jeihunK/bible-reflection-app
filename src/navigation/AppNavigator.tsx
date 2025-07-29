@@ -33,6 +33,9 @@ const TabNavigator = () => {
           height: 70,
           paddingBottom: 10,
           paddingTop: 10,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E2E8F0',
         },
         headerShown: false,
       }}
@@ -78,10 +81,12 @@ const AppNavigator = () => {
           headerTitleStyle: {
             fontSize: 20,
             fontWeight: '600',
+            color: '#FFFFFF',
           },
           headerStyle: {
-            backgroundColor: '#F8F9FA',
+            backgroundColor: '#6B73FF',
           },
+          headerTintColor: '#FFFFFF',
         }}
       >
         <Stack.Screen 
@@ -111,7 +116,16 @@ const AppNavigator = () => {
           component={ReflectionScreen}
           options={{ 
             title: 'Bible Reflection',
-            presentation: 'modal'
+            presentation: 'modal',
+            headerStyle: {
+              backgroundColor: '#6B73FF',
+            },
+            headerTitleStyle: {
+              color: '#FFFFFF',
+              fontSize: 20,
+              fontWeight: '600',
+            },
+            headerTintColor: '#FFFFFF',
           }}
         />
         <Stack.Screen 
