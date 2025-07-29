@@ -63,4 +63,5 @@ export type RootStackParamList = {
   Reflection: { verseId: string; entryId?: string };
   PrivacyPolicy: undefined;
   TermsOfService: undefined;
+  ReflectionsList: undefined;
 };

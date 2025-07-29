@@ -168,6 +168,61 @@ class DatabaseService {
     await this.db.runAsync('DELETE FROM reflections WHERE entry_id = ?', [id]);
   }
 
+  // Reflection Methods
+  async createReflection(reflection: Omit<Reflection, 'id' | 'createdAt'>): Promise<string> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+
+    await this.db.runAsync(
+      `INSERT INTO reflections (id, entry_id, verse_id, content, created_at)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, reflection.entryId, reflection.verseId, reflection.content, now]
+    );
+
+    return id;
+  }
+
+  async getReflections(): Promise<Reflection[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const result = await this.db.getAllAsync(
+      `SELECT * FROM reflections ORDER BY created_at DESC`
+    );
+
+    return result.map((row: any) => ({
+      id: row.id,
+      entryId: row.entry_id,
+      verseId: row.verse_id,
+      content: row.content,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async getReflectionsByEntry(entryId: string): Promise<Reflection[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const result = await this.db.getAllAsync(
+      `SELECT * FROM reflections WHERE entry_id = ? ORDER BY created_at DESC`,
+      [entryId]
+    );
+
+    return result.map((row: any) => ({
+      id: row.id,
+      entryId: row.entry_id,
+      verseId: row.verse_id,
+      content: row.content,
+      createdAt: row.created_at,
+    }));
+  }
+
+  async deleteReflection(id: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    await this.db.runAsync('DELETE FROM reflections WHERE id = ?', [id]);
+  }
+
   // User Preferences Methods
   async getUserPreferences(): Promise<UserPreferences> {
     if (!this.db) throw new Error('Database not initialized');

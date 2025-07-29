@@ -193,15 +193,24 @@ const JournalScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
-        <Button
-          title="📝 New Journal Entry"
-          onPress={() => navigation.navigate('NewEntry')}
-          theme={theme}
-          variant="gradient"
-          size="large"
-          fullWidth
-          style={styles.addButton}
-        />
+        <View style={{ flexDirection: 'row', gap: theme.spacing.md, marginBottom: theme.spacing.md }}>
+          <Button
+            title="📝 New Entry"
+            onPress={() => navigation.navigate('NewEntry')}
+            theme={theme}
+            variant="gradient"
+            size="large"
+            style={{ flex: 1 }}
+          />
+          <Button
+            title="💭 My Reflections"
+            onPress={() => navigation.navigate('ReflectionsList')}
+            theme={theme}
+            variant="outline"
+            size="large"
+            style={{ flex: 1 }}
+          />
+        </View>
 
         <Typography 
           variant="title" 

@@ -133,6 +133,81 @@ class WebDatabaseService {
     });
   }
 
+  // Reflection Methods
+  async createReflection(reflection: Omit<Reflection, 'id' | 'createdAt'>): Promise<string> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+    
+    const fullReflection: Reflection = {
+      id,
+      entryId: reflection.entryId,
+      verseId: reflection.verseId,
+      content: reflection.content,
+      createdAt: now,
+    };
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['reflections'], 'readwrite');
+      const store = transaction.objectStore('reflections');
+      const request = store.add(fullReflection);
+
+      request.onsuccess = () => resolve(id);
+      request.onerror = () => reject(new Error('Failed to create reflection'));
+    });
+  }
+
+  async getReflections(): Promise<Reflection[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['reflections'], 'readonly');
+      const store = transaction.objectStore('reflections');
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const reflections = request.result.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        resolve(reflections);
+      };
+      request.onerror = () => reject(new Error('Failed to get reflections'));
+    });
+  }
+
+  async getReflectionsByEntry(entryId: string): Promise<Reflection[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['reflections'], 'readonly');
+      const store = transaction.objectStore('reflections');
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const allReflections = request.result;
+        const entryReflections = allReflections
+          .filter(r => r.entryId === entryId)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        resolve(entryReflections);
+      };
+      request.onerror = () => reject(new Error('Failed to get reflections'));
+    });
+  }
+
+  async deleteReflection(id: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['reflections'], 'readwrite');
+      const store = transaction.objectStore('reflections');
+      const request = store.delete(id);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error('Failed to delete reflection'));
+    });
+  }
+
   async getUserPreferences(): Promise<UserPreferences> {
     if (!this.db) throw new Error('Database not initialized');
 

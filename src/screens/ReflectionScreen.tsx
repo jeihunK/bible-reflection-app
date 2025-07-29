@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, StyleSheet, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { platformDatabase as databaseService } from '../services/platformDatabase';
 import { getTheme } from '../utils/theme';
 import { UserPreferences, BibleVerse, JournalEntry } from '../types';
@@ -122,15 +122,40 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({ navigation, route }
     setReflectionPrompts(prompts);
   };
 
+  const handleRefreshPrompts = () => {
+    generateReflectionPrompts();
+  };
+
   const handleSaveReflection = async () => {
-    if (!reflection.trim()) return;
+    if (!reflection.trim() || !verse) return;
 
     try {
-      // TODO: Save reflection to database
-      // For now, we'll just show a success message
-      navigation.goBack();
+      await databaseService.init();
+      
+      // Create a reflection entry
+      await databaseService.createReflection({
+        entryId: entryId || '', // Can be empty string if standalone reflection
+        verseId: verse.id,
+        content: reflection.trim(),
+      });
+
+      Alert.alert(
+        'Reflection Saved',
+        'Your reflection has been saved successfully. You can view it in your journal.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
     } catch (error) {
       console.error('Failed to save reflection:', error);
+      Alert.alert(
+        'Error',
+        'Failed to save your reflection. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -212,9 +237,18 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({ navigation, route }
         </Card>
 
         <Card theme={theme} style={styles.promptCard}>
-          <Typography variant="heading" theme={theme} style={{ marginBottom: theme.spacing.md }}>
-            Reflection Prompts
-          </Typography>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
+            <Typography variant="heading" theme={theme}>
+              Reflection Prompts
+            </Typography>
+            <Button
+              title="Refresh"
+              onPress={handleRefreshPrompts}
+              theme={theme}
+              variant="outline"
+              size="small"
+            />
+          </View>
           
           {currentEntry && (
             <Typography 
