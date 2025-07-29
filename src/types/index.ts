@@ -61,4 +61,6 @@ export type RootStackParamList = {
   BibleSearch: undefined;
   Settings: undefined;
   Reflection: { verseId: string; entryId?: string };
+  PrivacyPolicy: undefined;
+  TermsOfService: undefined;
 };

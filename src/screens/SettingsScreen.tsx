@@ -275,13 +275,26 @@ const SettingsScreen = ({ navigation }: any) => {
             />
           </View>
 
-          <View style={[styles.settingRow, styles.lastRow]}>
+          <View style={styles.settingRow}>
             <Typography variant="body" theme={theme}>
               Privacy Policy
             </Typography>
             <Button
               title="View"
-              onPress={() => Alert.alert('Privacy Policy', 'Your data is stored locally on your device and never shared.')}
+              onPress={() => navigation.navigate('PrivacyPolicy')}
+              theme={theme}
+              variant="outline"
+              size="small"
+            />
+          </View>
+
+          <View style={[styles.settingRow, styles.lastRow]}>
+            <Typography variant="body" theme={theme}>
+              Terms of Service
+            </Typography>
+            <Button
+              title="View"
+              onPress={() => navigation.navigate('TermsOfService')}
               theme={theme}
               variant="outline"
               size="small"

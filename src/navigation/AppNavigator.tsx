@@ -11,6 +11,8 @@ import NewEntryScreen from '../screens/NewEntryScreen';
 import BibleSearchScreen from '../screens/BibleSearchScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ReflectionScreen from '../screens/ReflectionScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/TermsOfServiceScreen';
 
 // Icons for navigation (we'll use simple text for now)
 const Tab = createBottomTabNavigator();
@@ -109,6 +111,38 @@ const AppNavigator = () => {
           options={{ 
             title: 'Bible Reflection',
             presentation: 'modal'
+          }}
+        />
+        <Stack.Screen 
+          name="PrivacyPolicy" 
+          component={PrivacyPolicyScreen}
+          options={{ 
+            title: 'Privacy Policy',
+            headerStyle: {
+              backgroundColor: '#6B73FF',
+            },
+            headerTitleStyle: {
+              color: '#FFFFFF',
+              fontSize: 20,
+              fontWeight: '600',
+            },
+            headerTintColor: '#FFFFFF',
+          }}
+        />
+        <Stack.Screen 
+          name="TermsOfService" 
+          component={TermsOfServiceScreen}
+          options={{ 
+            title: 'Terms of Service',
+            headerStyle: {
+              backgroundColor: '#6B73FF',
+            },
+            headerTitleStyle: {
+              color: '#FFFFFF',
+              fontSize: 20,
+              fontWeight: '600',
+            },
+            headerTintColor: '#FFFFFF',
           }}
         />
       </Stack.Navigator>
