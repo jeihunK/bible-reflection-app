@@ -139,16 +139,18 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({ navigation, route }
         content: reflection.trim(),
       });
 
+      // Show success message and auto-close
       Alert.alert(
-        'Reflection Saved',
-        'Your reflection has been saved successfully. You can view it in your journal.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
+        '✅ Reflection Saved!',
+        'Your reflection has been saved successfully.',
+        [],
+        { cancelable: false }
       );
+      
+      // Auto-close after 1.5 seconds to acknowledge completion
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error) {
       console.error('Failed to save reflection:', error);
       Alert.alert(
