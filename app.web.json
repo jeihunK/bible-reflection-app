@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Bible Reflection",
+    "slug": "bible-reflection-app",
+    "version": "1.0.0",
+    "description": "A spiritual journaling app with AI-powered Bible verse recommendations for Christian reflection and growth",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "privacy": "public",
+    "platforms": [
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "backgroundColor": "#667EEA",
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
+  }
+}

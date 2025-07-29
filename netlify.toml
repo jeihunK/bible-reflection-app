@@ -1,0 +1,17 @@
+[build]
+  command = "cp app.web.json app.json && npm uninstall expo-sqlite && npx expo export --platform web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production]
+  command = "cp app.web.json app.json && npm uninstall expo-sqlite && npx expo export --platform web"
+
+[context.deploy-preview]
+  command = "cp app.web.json app.json && npm uninstall expo-sqlite && npx expo export --platform web"
