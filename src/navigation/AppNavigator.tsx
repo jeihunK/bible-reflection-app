@@ -91,7 +91,16 @@ const AppNavigator = () => {
           component={NewEntryScreen}
           options={{ 
             title: 'New Journal Entry',
-            presentation: 'modal'
+            presentation: 'modal',
+            headerStyle: {
+              backgroundColor: '#6B73FF',
+            },
+            headerTitleStyle: {
+              color: '#FFFFFF',
+              fontSize: 20,
+              fontWeight: '600',
+            },
+            headerTintColor: '#FFFFFF',
           }}
         />
         <Stack.Screen 
